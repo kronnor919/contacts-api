@@ -1,5 +1,7 @@
 # Contacts API
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Una API que guarda información básica de contactos, permite agregar, obtener y eliminar (modificar no es soportado por ahora).
 
 ## Estructura de un contacto
@@ -185,3 +187,7 @@ Elimina un contacto registrado. No deja ningún rastro accesible de su informaci
     "contact": null
 }
 ```
+
+## Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
