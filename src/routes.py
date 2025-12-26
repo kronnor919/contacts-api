@@ -1,6 +1,7 @@
 from typing import Any
 from flask import Blueprint, Flask, jsonify, request, url_for
 from services import use_contact_service
+from common import HTTPStatus, generate_server_error
 
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -105,11 +106,18 @@ def delete_contact(id: int):
     res = service.delete(id)
     
     if not res.is_success:
+        if res.status_code == HTTPStatus.NOT_FOUND:
+            return jsonify({
+                "success": False,
+                "error": res.error,
+                "contact": None
+            }), HTTPStatus.NOT_FOUND
+        
         return jsonify({
             "success": False,
-            "error": res.error,
+            "error": generate_server_error(res.error),
             "contact": None
-        }), 500
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
     
     
     c = res.payload
@@ -122,7 +130,7 @@ def delete_contact(id: int):
             "phone": c.phone,
             "created_at": c.created_at
         }
-    }), 200
+    }), HTTPStatus.OK
 
 def register_routes(app: Flask) -> None:
     app.register_blueprint(bp)
