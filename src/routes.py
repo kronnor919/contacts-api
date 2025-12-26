@@ -1,5 +1,6 @@
-from typing import Any
+from typing import Any, cast
 from flask import Blueprint, Flask, jsonify, request, url_for
+from entities import Contact
 from services import use_contact_service
 from common import HTTPStatus, generate_server_error
 
@@ -17,6 +18,8 @@ def all_contacts():
             "error": res.error,
             "contacts": []
         }), 500
+    
+    contacts = cast(list[Contact], res.payload)
     return jsonify({
         "success": True,
         "error": None,
@@ -27,7 +30,7 @@ def all_contacts():
                 "phone": c.phone,
                 "created_at": c.created_at
             }
-        for c in res.payload]
+        for c in contacts]
     }), 200
 
 @bp.route("/contacts/<int:id>", methods=["GET"])
@@ -85,7 +88,7 @@ def post_contact():
             "contact": None
         }), 500
     
-    c = res.payload
+    c = cast(Contact, res.payload)
     response = jsonify({
         "success": True,
         "error": None,
@@ -115,12 +118,12 @@ def delete_contact(id: int):
         
         return jsonify({
             "success": False,
-            "error": generate_server_error(res.error),
+            "error": generate_server_error(cast(str, res.error)),
             "contact": None
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
     
-    c = res.payload
+    c = cast(Contact, res.payload)
     return jsonify({
         "success": True,
         "error": None,
