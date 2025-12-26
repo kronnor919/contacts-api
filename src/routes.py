@@ -2,7 +2,7 @@ from typing import Any, cast
 from flask import Blueprint, Flask, jsonify, request, url_for
 from entities import Contact
 from services import use_contact_service
-from common import HTTPStatus, generate_server_error
+from common import CustomStatus, generate_server_error, HTTPStatus
 
 
 bp = Blueprint("api", __name__, url_prefix="/api")
@@ -19,14 +19,7 @@ def all_contacts():
             "contacts": []
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
-    if not res.payload:
-        return jsonify({
-            "success": True,
-            "error": None,
-            "contacts": []
-        }), HTTPStatus.OK
-    
-    contacts = cast(list[Contact], res.payload)
+    contacts = cast(list[Contact], res.value)
     return jsonify({
         "success": True,
         "error": None,
@@ -47,7 +40,7 @@ def get_contact(id: int):
     
     if not res.is_success:
         err = cast(str, res.error)
-        if res.status_code == HTTPStatus.NOT_FOUND:
+        if res.status == CustomStatus.DB_NOT_EXISTS:
             return jsonify({
                 "success": False,
                 "error": err,
@@ -60,7 +53,7 @@ def get_contact(id: int):
             "contact": None
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
-    c = cast(Contact, res.payload)
+    c = cast(Contact, res.value)
     return jsonify({
         "success": True,
         "error": None,
@@ -84,7 +77,7 @@ def post_contact():
     
     if not res.is_success:
         err = cast(str, res.error)
-        if res.status_code == HTTPStatus.BAD_REQUEST:
+        if res.status == CustomStatus.VALIDATION_ERR:
             return jsonify({
                 "success": False,
                 "error": err,
@@ -97,7 +90,7 @@ def post_contact():
             "contact": None
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
-    c = cast(Contact, res.payload)
+    c = cast(Contact, res.value)
     response = jsonify({
         "success": True,
         "error": None,
@@ -120,7 +113,7 @@ def delete_contact(id: int):
     
     if not res.is_success:
         err = cast(str, res.error)
-        if res.status_code == HTTPStatus.NOT_FOUND:
+        if res.status == CustomStatus.DB_NOT_EXISTS:
             return jsonify({
                 "success": False,
                 "error": err,
@@ -133,8 +126,7 @@ def delete_contact(id: int):
             "contact": None
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
-    
-    c = cast(Contact, res.payload)
+    c = cast(Contact, res.value)
     return jsonify({
         "success": True,
         "error": None,

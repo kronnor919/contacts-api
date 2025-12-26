@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from http import HTTPStatus
 
 SQLITE_DB_URI = "sqlite:///sqlite3_testdb.db"
@@ -9,31 +10,28 @@ INTERNAL_SERVER_ERROR_MESSAGE = "A ocurrido un error interno en el servidor, est
 def generate_server_error(error: str) -> str:
     return INTERNAL_SERVER_ERROR_MESSAGE % error + "." if not error.endswith(".") else ""
 
+class CustomStatus(Enum):
+    # Success 200 - 299
+    OK = 200
+    CREATED = 201
+    DELETED = 202
+    
+    # Errors 400 - 499
+    VALIDATION_ERR = 400
+    DB_NOT_EXISTS = 401
+    UNEXPECTED_ERROR = 402
+
 @dataclass
 class Result[T]:
-    payload: T | None
+    value: T | None
     error: str | None
     is_success: bool
+    status: CustomStatus
     
     @staticmethod
-    def success(payload: T) -> "Result[T]":
-        return Result[T](payload, None, True)
-
-    @staticmethod
-    def failure(error: str) -> "Result[T]":
-        return Result[T](None, error, False)
-
-@dataclass
-class HTTPResult[T]:
-    payload: T | None
-    error: str | None
-    is_success: bool
-    status_code: int
+    def success(value: T, status: CustomStatus) -> "Result[T]":
+        return Result[T](value, None, True, status)
     
     @staticmethod
-    def success(payload: T, status_code: int) -> "HTTPResult[T]":
-        return HTTPResult[T](payload, None, True, status_code)
-    
-    @staticmethod
-    def failure(error: str, status_code: int) -> "HTTPResult[T]":
-        return HTTPResult[T](None, error, False, status_code)
+    def failure(error: str, status: CustomStatus) -> "Result[T]":
+        return Result[T](None, error, False, status)
