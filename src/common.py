@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from http import HTTPStatus
 
 SQLITE_DB_URI = "sqlite:///sqlite3_testdb.db"
@@ -8,6 +9,17 @@ INTERNAL_SERVER_ERROR_MESSAGE = "A ocurrido un error interno en el servidor, est
 
 def generate_server_error(error: str) -> str:
     return INTERNAL_SERVER_ERROR_MESSAGE % error + "." if not error.endswith(".") else ""
+
+class CustomStatus(Enum):
+    # Success 200 - 299
+    OK = 200
+    CREATED = 201
+    DELETED = 202
+    
+    # Errors 400 - 499
+    VALIDATION_ERR = 400
+    DB_NOT_EXISTS = 401
+    UNEXPECTED_ERROR = 402
 
 @dataclass
 class Result[T]:
