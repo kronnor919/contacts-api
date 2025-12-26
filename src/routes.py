@@ -17,7 +17,7 @@ def all_contacts():
             "success": False,
             "error": res.error,
             "contacts": []
-        }), 500
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
     
     contacts = cast(list[Contact], res.payload)
     return jsonify({
@@ -31,7 +31,7 @@ def all_contacts():
                 "created_at": c.created_at
             }
         for c in contacts]
-    }), 200
+    }), HTTPStatus.OK
 
 @bp.route("/contacts/<int:id>", methods=["GET"])
 def get_contact(id: int):
@@ -43,14 +43,14 @@ def get_contact(id: int):
             "success": False,
             "error": res.error,
             "contact": None
-        }), 500
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
     
     if not res.payload:
         return jsonify({
             "success": False,
             "error": f"Contact with id {id} do not exists.",
             "contact": None
-        }), 404
+        }), HTTPStatus.NOT_FOUND
     
     c = res.payload
     return jsonify({
@@ -62,7 +62,7 @@ def get_contact(id: int):
             "phone": c.phone,
             "created_at": c.created_at
         }
-    }), 200
+    }), HTTPStatus.OK
 
 @bp.route("/contacts", methods=["POST"])
 def post_contact():
@@ -76,7 +76,7 @@ def post_contact():
             "success": False,
             "error": "The request is missing parameters ('tag' or 'phone').",
             "contact": None
-        }), 400
+        }), HTTPStatus.BAD_REQUEST
     
     service = use_contact_service()
     res = service.add(tag, phone)
@@ -86,7 +86,7 @@ def post_contact():
             "success": False,
             "error": res.error,
             "contact": None
-        }), 500
+        }), HTTPStatus.INTERNAL_SERVER_ERROR
     
     c = cast(Contact, res.payload)
     response = jsonify({
@@ -100,8 +100,9 @@ def post_contact():
         }
     })
     response.headers["Location"] = url_for("api.get_contact", id=c.id, _external=True)
-    
-    return response, 201
+    response.status_code = HTTPStatus.CREATED
+
+    return response
 
 @bp.route("/contacts/<int:id>", methods=["DELETE"])
 def delete_contact(id: int):
