@@ -11,3 +11,6 @@ wheels/
 
 # Flask instance folder
 src/instance/
+
+# Files with extension or sub-extension .ignore
+*.ignore*
