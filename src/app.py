@@ -1,5 +1,6 @@
 from pathlib import Path
 from flask import Flask
+from flask_cors import CORS
 from routes import register_routes
 from db import init_db
 from common import SQLITE_DB_URI
@@ -7,6 +8,7 @@ from common import SQLITE_DB_URI
 
 def create_app() -> Flask:
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app)
     
     Path(app.root_path, "instance").mkdir(exist_ok=True)
     
