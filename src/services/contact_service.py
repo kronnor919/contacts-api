@@ -1,7 +1,7 @@
 from typing import List
 from db import ContactsRepository
 from entities import Contact
-from common import Result, HTTPResult, HTTPStatus
+from common import HTTPResult, HTTPStatus
 
 
 class ContactService:
@@ -11,36 +11,38 @@ class ContactService:
     def __init__(self, repo: ContactsRepository) -> None:
         self.repo = repo
     
-    def all(self) -> Result[_MaybeContactsType]:
+    def all(self) -> HTTPResult[_MaybeContactsType]:
         try:
             contacts = self.repo.all()
-            return Result[ContactService._MaybeContactsType].success(contacts)
+            return HTTPResult[ContactService._MaybeContactsType].success(contacts, HTTPStatus.OK)
         
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return Result[ContactService._MaybeContactsType].failure(str(e))
+            return HTTPResult[ContactService._MaybeContactsType].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
     
-    def get(self, id: int) -> Result[_MaybeContactType]:
+    def get(self, id: int) -> HTTPResult[Contact]:
         try:
             contact = self.repo.get(id)
-            return Result[ContactService._MaybeContactType].success(contact)
+            if not contact:
+                return HTTPResult[Contact].failure(f"Contact with id {id} do not exists.", HTTPStatus.NOT_FOUND)
+            return HTTPResult[Contact].success(contact, HTTPStatus.OK)
         
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return Result[ContactService._MaybeContactType].failure(str(e))
+            return HTTPResult[Contact].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
 
-    def add(self, tag: str, phone: str) -> Result[Contact]:
+    def add(self, tag: str, phone: str) -> HTTPResult[Contact]:
         try:
             c = Contact(
                 tag,
                 phone
             )
             new_c = self.repo.add(c)
-            return Result[Contact].success(new_c)
+            return HTTPResult[Contact].success(new_c, HTTPStatus.CREATED)
             
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return Result[Contact].failure(str(e))
+            return HTTPResult[Contact].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
     
     def delete(self, id: int) -> HTTPResult[Contact]:
         try:
@@ -48,7 +50,6 @@ class ContactService:
             
             if not c:
                 return HTTPResult[Contact].failure(f"Contact with id {id} do not exists.", HTTPStatus.NOT_FOUND)
-            
             return HTTPResult[Contact].success(c, HTTPStatus.OK)
         
         except Exception as e: # Future: log errors
