@@ -1,7 +1,7 @@
 from typing import List
 from db import ContactsRepository
 from entities import Contact
-from common import Result
+from common import Result, HTTPResult, HTTPStatus
 
 
 class ContactService:
@@ -42,15 +42,15 @@ class ContactService:
             print(f"Unexpected error (partial handled): {e}")
             return Result[Contact].failure(str(e))
     
-    def delete(self, id: int) -> Result[Contact]:
+    def delete(self, id: int) -> HTTPResult[Contact]:
         try:
             c = self.repo.delete(id)
-
-            if not c:
-                return Result[Contact].failure(f"Contact with id {id} do not exists.")
             
-            return Result[Contact].success(c)
+            if not c:
+                return HTTPResult[Contact].failure(f"Contact with id {id} do not exists.", HTTPStatus.NOT_FOUND)
+            
+            return HTTPResult[Contact].success(c, HTTPStatus.OK)
         
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return Result[Contact].failure(str(e))
+            return HTTPResult[Contact].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
