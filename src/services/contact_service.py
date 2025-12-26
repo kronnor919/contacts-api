@@ -40,6 +40,10 @@ class ContactService:
             new_c = self.repo.add(c)
             return HTTPResult[Contact].success(new_c, HTTPStatus.CREATED)
             
+        except ValueError as e:
+            print(f"Error: invalid contact: {e}")
+            return HTTPResult.failure(str(e), HTTPStatus.BAD_REQUEST)
+            
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
             return HTTPResult[Contact].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
