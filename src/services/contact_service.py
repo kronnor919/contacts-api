@@ -1,61 +1,60 @@
 from typing import List
 from db import ContactsRepository
 from entities import Contact
-from common import HTTPResult, HTTPStatus
+from common import Result, CustomStatus
 
 
 class ContactService:
     _MaybeContactsType = List[Contact] | List[None]
-    _MaybeContactType = Contact | None
     
     def __init__(self, repo: ContactsRepository) -> None:
         self.repo = repo
     
-    def all(self) -> HTTPResult[_MaybeContactsType]:
+    def all(self) -> Result[_MaybeContactsType]:
         try:
             contacts = self.repo.all()
-            return HTTPResult[ContactService._MaybeContactsType].success(contacts, HTTPStatus.OK)
+            return Result[ContactService._MaybeContactsType].success(contacts, CustomStatus.OK)
         
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return HTTPResult[ContactService._MaybeContactsType].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+            return Result[ContactService._MaybeContactsType].failure(str(e), CustomStatus.UNEXPECTED_ERROR)
     
-    def get(self, id: int) -> HTTPResult[Contact]:
+    def get(self, id: int) -> Result[Contact]:
         try:
             contact = self.repo.get(id)
             if not contact:
-                return HTTPResult[Contact].failure(f"Contact with id {id} do not exists.", HTTPStatus.NOT_FOUND)
-            return HTTPResult[Contact].success(contact, HTTPStatus.OK)
+                return Result[Contact].failure(f"Contact with id {id} do not exists.", CustomStatus.DB_NOT_EXISTS)
+            return Result[Contact].success(contact, CustomStatus.OK)
         
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return HTTPResult[Contact].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+            return Result[Contact].failure(str(e), CustomStatus.UNEXPECTED_ERROR)
 
-    def add(self, tag: str, phone: str) -> HTTPResult[Contact]:
+    def add(self, tag: str, phone: str) -> Result[Contact]:
         try:
             c = Contact(
                 tag,
                 phone
             )
             new_c = self.repo.add(c)
-            return HTTPResult[Contact].success(new_c, HTTPStatus.CREATED)
+            return Result[Contact].success(new_c, CustomStatus.CREATED)
             
         except ValueError as e:
             print(f"Error: invalid contact: {e}")
-            return HTTPResult.failure(str(e), HTTPStatus.BAD_REQUEST)
+            return Result.failure(str(e), CustomStatus.VALIDATION_ERR)
             
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return HTTPResult[Contact].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+            return Result[Contact].failure(str(e), CustomStatus.UNEXPECTED_ERROR)
     
-    def delete(self, id: int) -> HTTPResult[Contact]:
+    def delete(self, id: int) -> Result[Contact]:
         try:
             c = self.repo.delete(id)
             
             if not c:
-                return HTTPResult[Contact].failure(f"Contact with id {id} do not exists.", HTTPStatus.NOT_FOUND)
-            return HTTPResult[Contact].success(c, HTTPStatus.OK)
+                return Result[Contact].failure(f"Contact with id {id} do not exists.", CustomStatus.DB_NOT_EXISTS)
+            return Result[Contact].success(c, CustomStatus.OK)
         
         except Exception as e: # Future: log errors
             print(f"Unexpected error (partial handled): {e}")
-            return HTTPResult[Contact].failure(str(e), HTTPStatus.INTERNAL_SERVER_ERROR)
+            return Result[Contact].failure(str(e), CustomStatus.UNEXPECTED_ERROR)
