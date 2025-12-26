@@ -15,9 +15,16 @@ def all_contacts():
     if not res.is_success:
         return jsonify({
             "success": False,
-            "error": res.error,
+            "error": generate_server_error(cast(str, res.error)),
             "contacts": []
         }), HTTPStatus.INTERNAL_SERVER_ERROR
+    
+    if not res.payload:
+        return jsonify({
+            "success": True,
+            "error": None,
+            "contacts": []
+        }), HTTPStatus.OK
     
     contacts = cast(list[Contact], res.payload)
     return jsonify({
@@ -39,20 +46,21 @@ def get_contact(id: int):
     res = service.get(id)
     
     if not res.is_success:
+        err = cast(str, res.error)
+        if res.status_code == HTTPStatus.NOT_FOUND:
+            return jsonify({
+                "success": False,
+                "error": err,
+                "contact": None
+            }), HTTPStatus.NOT_FOUND
+        
         return jsonify({
             "success": False,
-            "error": res.error,
+            "error": generate_server_error(err),
             "contact": None
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
-    if not res.payload:
-        return jsonify({
-            "success": False,
-            "error": f"Contact with id {id} do not exists.",
-            "contact": None
-        }), HTTPStatus.NOT_FOUND
-    
-    c = res.payload
+    c = cast(Contact, res.payload)
     return jsonify({
         "success": True,
         "error": None,
@@ -68,23 +76,24 @@ def get_contact(id: int):
 def post_contact():
     json: dict[str, Any] = request.get_json()
     
-    tag: str | None = json.get("tag")
-    phone: str | None = json.get("phone")
-    
-    if tag is None or phone is None:
-        return jsonify({
-            "success": False,
-            "error": "The request is missing parameters ('tag' or 'phone').",
-            "contact": None
-        }), HTTPStatus.BAD_REQUEST
+    tag: str = json.get("tag", "")
+    phone: str = json.get("phone", "")
     
     service = use_contact_service()
     res = service.add(tag, phone)
     
     if not res.is_success:
+        err = cast(str, res.error)
+        if res.status_code == HTTPStatus.BAD_REQUEST:
+            return jsonify({
+                "success": False,
+                "error": err,
+                "contact": None
+            }), HTTPStatus.BAD_REQUEST
+        
         return jsonify({
             "success": False,
-            "error": res.error,
+            "error": generate_server_error(err),
             "contact": None
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
@@ -110,16 +119,17 @@ def delete_contact(id: int):
     res = service.delete(id)
     
     if not res.is_success:
+        err = cast(str, res.error)
         if res.status_code == HTTPStatus.NOT_FOUND:
             return jsonify({
                 "success": False,
-                "error": res.error,
+                "error": err,
                 "contact": None
             }), HTTPStatus.NOT_FOUND
         
         return jsonify({
             "success": False,
-            "error": generate_server_error(cast(str, res.error)),
+            "error": generate_server_error(err),
             "contact": None
         }), HTTPStatus.INTERNAL_SERVER_ERROR
     
