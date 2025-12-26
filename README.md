@@ -185,3 +185,9 @@ Elimina un contacto registrado. No deja ningún rastro accesible de su informaci
     "contact": null
 }
 ```
+
+## Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
