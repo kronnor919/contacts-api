@@ -166,6 +166,16 @@ Elimina un contacto registrado. No deja ningún rastro accesible de su informaci
 }
 ```
 
+### ID Inexistente - 404
+
+```json
+{
+    "success": false,
+    "error": "Contact with id <id> do not exists.",
+    "contact": null
+}
+```
+
 ### Error interno - 500
 
 ```json
