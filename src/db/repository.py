@@ -23,10 +23,8 @@ class ContactsRepository:
     
     def add(self, c: Contact) -> Contact:
         m = ContactModel(
-            id=c.id,
             tag=c.tag,
-            phone=c.phone,
-            created_at=c.created_at
+            phone=c.phone
         )
         self.db.add(m)
         self.db.commit()

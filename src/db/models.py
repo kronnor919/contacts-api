@@ -11,6 +11,10 @@ class ContactModel(db.Model):
     phone = db.Column(db.String, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     
+    def __init__(self, tag: str, phone: str) -> None:
+        self.tag = tag
+        self.phone = phone
+    
     def to_entity(self) -> Contact:
         return Contact(
             self.tag,
