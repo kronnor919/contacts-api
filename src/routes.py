@@ -138,5 +138,12 @@ def delete_contact(id: int):
         }
     }), HTTPStatus.OK
 
+@bp.route("/test", methods=["GET"])
+def test_get():
+    return jsonify({
+        "success": True,
+        "message": "Server running!"
+    }), HTTPStatus.OK
+
 def register_routes(app: Flask) -> None:
     app.register_blueprint(bp)

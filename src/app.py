@@ -5,12 +5,12 @@ from routes import register_routes
 from db import init_db
 from common import SQLITE_DB_URI
 
-
 def create_app() -> Flask:
     app = Flask(__name__, instance_relative_config=True)
     CORS(app)
     
     Path(app.root_path, "instance").mkdir(exist_ok=True)
+    
     
     if not app.config.from_pyfile("config.py", silent=True):
         app.config.from_mapping({
